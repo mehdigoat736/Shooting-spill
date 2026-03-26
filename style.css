@@ -1,60 +1,83 @@
 :root {
     --neon-cyan: #00ffff;
     --neon-magenta: #ff00ff;
+    --neon-orange: #ff9900;
     --dark-bg: #030307;
-    --grid-color: rgba(0, 255, 255, 0.1);
+    --grid-color: rgba(0, 255, 255, 0.08);
 }
 
 body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     background-color: var(--dark-bg);
-    overflow: hidden; /* Fjerner scroll */
+    overflow: hidden;
     color: white;
-    font-family: 'Courier New', Courier, monospace; /* Kode-stil font */
-    user-select: none; /* Hindrer markering av tekst på touch */
+    font-family: 'Courier New', Courier, monospace;
+    user-select: none;
     -webkit-touch-callout: none;
 }
 
-canvas {
-    display: block;
-}
+canvas { display: block; }
 
 #ui {
     position: absolute;
     top: 20px;
     left: 20px;
-    pointer-events: none; /* UI blokkerer ikke klikk/touch */
+    pointer-events: none;
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .stat-box {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px 20px;
-    border-left: 4px solid var(--neon-cyan);
+    background: rgba(0, 0, 0, 0.85);
+    padding: 10px 18px;
     border-radius: 4px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    margin-bottom: 10px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
 }
 
-.label {
-    color: #888;
-    font-size: 14px;
-    letter-spacing: 2px;
-}
+.score-box { border-left: 4px solid var(--neon-cyan); }
+.wave-box { border-left: 4px solid var(--neon-orange); }
 
-.value {
-    color: var(--neon-cyan);
-    font-size: 24px;
+.label { color: #aaaaaa; font-size: 13px; letter-spacing: 1.5px; }
+.value { font-size: 22px; font-weight: bold; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+.score-box .value { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+.wave-box .value { color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); }
+
+/* Ultimate Cooldown Stil */
+#ultimate-status {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 13px;
+    letter-spacing: 1px;
     font-weight: bold;
-    text-shadow: 0 0 10px var(--neon-cyan);
-    margin-left: 10px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.ultimate-ready {
+    color: #ffffff;
+    border-left-color: #ffffff !important;
+    text-shadow: 0 0 15px #ffffff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.ultimate-charging {
+    color: #555555;
+    border-left-color: #333333 !important;
 }
 
 .help-text {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
+    margin: 10px 0 0 0;
+    font-size: 11px;
+    color: #777777;
     text-transform: uppercase;
     letter-spacing: 1px;
+    max-width: 400px;
 }
