@@ -3,25 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyber-Grid Annihilator - GitHub Overhaul</title>
+    <title>Cyber-Grid: Infinite</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="ui">
-        <div class="stat-box score-box">
-            <span class="label">SCORE:</span>
-            <span id="score" class="value">000000</span>
+    <div id="start-screen" class="overlay">
+        <h1 class="welcome-text">WELCOME</h1>
+        <p>VELG VANSKELIGHETSGRAD:</p>
+        <div class="btn-group">
+            <button onclick="startGame(0.7)">EASY</button>
+            <button onclick="startGame(1.0)">MEDIUM</button>
+            <button onclick="startGame(1.5)">HARDCORE</button>
         </div>
-        <div class="stat-box wave-box">
-            <span class="label">BØLGE:</span>
-            <span id="wave" class="value">1</span>
-        </div>
-        <div id="ultimate-status" class="ultimate-charging">
-            ULTIMATE: READY
-        </div>
-        
-        <p class="help-text">WASD for å flytte • KLIKK/TAP for å skyte • Trykk 'E' (eller dobbelttap på iPad) for PULSE NOVA</p>
+    </div>
+
+    <div id="death-screen" class="overlay hidden">
+        <h1 class="fail-text">MISSION FAILED</h1>
+        <p id="final-score">SCORE: 000000</p>
+        <button class="retry-btn" onclick="resetGame()">TRY AGAIN</button>
+    </div>
+
+    <div id="ui" class="hidden">
+        <div class="stat-box">SCORE: <span id="score">000000</span></div>
+        <div class="stat-box">WAVE: <span id="wave">1</span></div>
+        <div id="ultimate-status">ULTIMATE: READY</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
