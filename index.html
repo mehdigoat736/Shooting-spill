@@ -4,34 +4,348 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Cyber-Grid: Infinite</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --dark-bg: #020205;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none;
+        }
+
+        canvas { display: block; }
+
+        /* MENY STYLING */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 2, 5, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        .welcome-text {
+            font-size: clamp(40px, 10vw, 80px);
+            letter-spacing: 10px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+
+        .btn-group { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+
+        button {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        button:active { background: var(--neon-cyan); color: black; }
+
+        .retry-btn { border-color: var(--neon-magenta); color: var(--neon-magenta); margin-top: 20px;}
+
+        /* UI I SPILLET */
+        #ui {
+            position: absolute;
+            top: 20px; left: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-left: 3px solid var(--neon-cyan);
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
 
     <div id="start-screen" class="overlay">
         <h1 class="welcome-text">WELCOME</h1>
-        <p>VELG VANSKELIGHETSGRAD:</p>
+        <p style="color: #888; margin-bottom: 30px;">CYBER-GRID PROTOCOL v2.0</p>
         <div class="btn-group">
-            <button onclick="startGame(0.7)">EASY</button>
-            <button onclick="startGame(1.0)">MEDIUM</button>
-            <button onclick="startGame(1.5)">HARDCORE</button>
+            <button onclick="initGame(0.7)">EASY</button>
+            <button onclick="initGame(1.1)">MEDIUM</button>
+            <button onclick="initGame(1.8)">HARDCORE</button>
         </div>
     </div>
 
     <div id="death-screen" class="overlay hidden">
-        <h1 class="fail-text">MISSION FAILED</h1>
-        <p id="final-score">SCORE: 000000</p>
-        <button class="retry-btn" onclick="resetGame()">TRY AGAIN</button>
+        <h1 style="color: var(--neon-magenta); font-size: 50px;">MISSION FAILED</h1>
+        <p id="final-score" style="font-size: 24px;">SCORE: 000000</p>
+        <button class="retry-btn" onclick="location.reload()">TRY AGAIN</button>
     </div>
 
     <div id="ui" class="hidden">
-        <div class="stat-box">SCORE: <span id="score">000000</span></div>
-        <div class="stat-box">WAVE: <span id="wave">1</span></div>
-        <div id="ultimate-status">ULTIMATE: READY</div>
+        <div class="stat-box">SCORE: <span id="score-val">000000</span></div>
+        <div class="stat-box">WAVE: <span id="wave-val">1</span></div>
+        <div id="nova-status" style="color: var(--neon-cyan); font-size: 12px;">NOVA: READY</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <script src="script.js" defer></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // SPILL-INNSTILLINGER
+        const WORLD_SIZE = 4000;
+        let diffMult = 1;
+        let gameActive = false;
+        let score = 0;
+        let wave = 1;
+        let camera = { x: 0, y: 0 };
+        let lastNova = 0;
+
+        let player;
+        let enemies = [];
+        let projectiles = [];
+        let particles = [];
+        let obstacles = [];
+        const keys = {};
+
+        // KLASSER
+        class Player {
+            constructor() {
+                this.x = WORLD_SIZE / 2;
+                this.y = WORLD_SIZE / 2;
+                this.vx = 0; this.vy = 0;
+                this.angle = 0;
+                this.size = 25;
+            }
+            update() {
+                if (keys['KeyW']) this.vy -= 0.8;
+                if (keys['KeyS']) this.vy += 0.8;
+                if (keys['KeyA']) this.vx -= 0.8;
+                if (keys['KeyD']) this.vx += 0.8;
+
+                this.vx *= 0.95; this.vy *= 0.95;
+                this.x += this.vx; this.y += this.vy;
+
+                // Verdens-grenser
+                this.x = Math.max(50, Math.min(WORLD_SIZE - 50, this.x));
+                this.y = Math.max(50, Math.min(WORLD_SIZE - 50, this.y));
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x - camera.x, this.y - camera.y);
+                ctx.rotate(this.angle);
+                
+                // Tegn skipet
+                ctx.shadowBlur = 20; ctx.shadowColor = "#00ffff";
+                ctx.fillStyle = "#222";
+                ctx.strokeStyle = "#00ffff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(25, 0); ctx.lineTo(-15, 18); ctx.lineTo(-10, 0); ctx.lineTo(-15, -18);
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+                
+                // Motor-glød
+                ctx.fillStyle = "white";
+                ctx.beginPath(); ctx.arc(-8, 0, 4, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, angle) {
+                this.x = x; this.y = y;
+                this.vx = Math.cos(angle) * 15;
+                this.vy = Math.sin(angle) * 15;
+                this.life = 100;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life--; }
+            draw() {
+                ctx.fillStyle = "#ff00ff";
+                ctx.shadowBlur = 10; ctx.shadowColor = "#ff00ff";
+                ctx.beginPath();
+                ctx.arc(this.x - camera.x, this.y - camera.y, 4, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        class Enemy {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.hp = 2;
+                this.speed = (1.5 + Math.random()) * diffMult;
+                this.radius = 25;
+            }
+            update() {
+                let dx = player.x - this.x;
+                let dy = player.y - this.y;
+                let angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * this.speed;
+                this.y += Math.sin(angle) * this.speed;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x - camera.x, this.y - camera.y);
+                ctx.shadowBlur = 15; ctx.shadowColor = "red";
+                ctx.fillStyle = "#111"; ctx.strokeStyle = "red";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius, this.radius*0.6, 0, 0, Math.PI*2);
+                ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "red";
+                ctx.beginPath(); ctx.arc(0, -5, 8, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // MOTOR
+        function initGame(m) {
+            diffMult = m;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player = new Player();
+            enemies = []; projectiles = []; particles = []; obstacles = [];
+            score = 0; wave = 1;
+            
+            // Lag noen dekorative skyer/hindringer
+            for(let i=0; i<30; i++) {
+                obstacles.push({
+                    x: Math.random()*WORLD_SIZE, y: Math.random()*WORLD_SIZE,
+                    w: Math.random()*200+100, h: Math.random()*200+100,
+                    c: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.05)' : 'rgba(255, 0, 255, 0.05)'
+                });
+            }
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('ui').classList.remove('hidden');
+            gameActive = true;
+            spawnWave();
+            requestAnimationFrame(update);
+        }
+
+        function spawnWave() {
+            if(!gameActive) return;
+            for(let i=0; i < 5 + (wave * 2); i++) {
+                let ang = Math.random() * Math.PI * 2;
+                let dist = 800 + Math.random() * 500;
+                enemies.push(new Enemy(
+                    player.x + Math.cos(ang) * dist,
+                    player.y + Math.sin(ang) * dist
+                ));
+            }
+            document.getElementById('wave-val').innerText = wave;
+        }
+
+        function update() {
+            if(!gameActive) return;
+            
+            // Kamera-logikk
+            camera.x = player.x - canvas.width / 2;
+            camera.y = player.y - canvas.height / 2;
+
+            // Tegne-rekkefølge
+            ctx.fillStyle = "#020205";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
+            ctx.lineWidth = 1;
+            let step = 150;
+            for(let x = -camera.x % step; x < canvas.width; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y = -camera.y % step; y < canvas.height; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Hindringer
+            obstacles.forEach(o => {
+                ctx.fillStyle = o.c;
+                ctx.fillRect(o.x - camera.x, o.y - camera.y, o.w, o.h);
+            });
+
+            // Spiller
+            player.update();
+            player.draw();
+
+            // Prosjektiler
+            projectiles.forEach((p, i) => {
+                p.update(); p.draw();
+                if(p.life <= 0) projectiles.splice(i, 1);
+                
+                // Sjekk treff
+                enemies.forEach((e, ei) => {
+                    let d = Math.hypot(p.x - e.x, p.y - e.y);
+                    if(d < e.radius) {
+                        e.hp--;
+                        projectiles.splice(i, 1);
+                        if(e.hp <= 0) {
+                            enemies.splice(ei, 1);
+                            score += 100;
+                            document.getElementById('score-val').innerText = String(score).padStart(6, '0');
+                            if(enemies.length === 0) { wave++; spawnWave(); }
+                        }
+                    }
+                });
+            });
+
+            // Fiender
+            enemies.forEach((e, i) => {
+                e.update(); e.draw();
+                let d = Math.hypot(player.x - e.x, player.y - e.y);
+                if(d < 30) {
+                    gameActive = false;
+                    document.getElementById('death-screen').classList.remove('hidden');
+                    document.getElementById('final-score').innerText = "SCORE: " + score;
+                }
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        // INPUT
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        // iPad Touch-skyting og sikte
+        canvas.addEventListener('touchstart', e => {
+            if(!gameActive) return;
+            let touch = e.touches[0];
+            let tx = touch.clientX + camera.x;
+            let ty = touch.clientY + camera.y;
+            let ang = Math.atan2(ty - player.y, tx - player.x);
+            player.angle = ang;
+            projectiles.push(new Projectile(player.x, player.y, ang));
+        }, {passive: false});
+
+        window.addEventListener('mousemove', e => {
+            if(!player) return;
+            player.angle = Math.atan2(e.clientY - (player.y - camera.y), e.clientX - (player.x - camera.x));
+        });
+
+        canvas.addEventListener('mousedown', () => {
+            if(gameActive) projectiles.push(new Projectile(player.x, player.y, player.angle));
+        });
+
+    </script>
 </body>
 </html>
