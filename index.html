@@ -2,15 +2,18 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Procedural Robot vs UFOs - GitHub Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cyber-Grid Annihilator - GitHub Project</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="ui">
-        <h2>Poeng: <span id="score">0</span></h2>
-        <p>Bruk WASD for å flytte, KLIKK for å skyte</p>
+        <div class="stat-box">
+            <span class="label">SCORE:</span>
+            <span id="score" class="value">000000</span>
+        </div>
+        <p class="help-text">WASD for å flytte • KLIKK/TAP for å skyte</p>
     </div>
 
     <canvas id="gameCanvas"></canvas>
