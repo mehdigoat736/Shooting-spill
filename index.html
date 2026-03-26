@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyber-Grid Annihilator - GitHub Project</title>
+    <title>Cyber-Grid Annihilator - GitHub Overhaul</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="ui">
-        <div class="stat-box">
+        <div class="stat-box score-box">
             <span class="label">SCORE:</span>
             <span id="score" class="value">000000</span>
         </div>
-        <p class="help-text">WASD for å flytte • KLIKK/TAP for å skyte</p>
+        <div class="stat-box wave-box">
+            <span class="label">BØLGE:</span>
+            <span id="wave" class="value">1</span>
+        </div>
+        <div id="ultimate-status" class="ultimate-charging">
+            ULTIMATE: READY
+        </div>
+        
+        <p class="help-text">WASD for å flytte • KLIKK/TAP for å skyte • Trykk 'E' (eller dobbelttap på iPad) for PULSE NOVA</p>
     </div>
 
     <canvas id="gameCanvas"></canvas>
