@@ -1,83 +1,85 @@
 :root {
     --neon-cyan: #00ffff;
     --neon-magenta: #ff00ff;
-    --neon-orange: #ff9900;
-    --dark-bg: #030307;
-    --grid-color: rgba(0, 255, 255, 0.08);
+    --dark-bg: #020205;
 }
 
 body {
     margin: 0; padding: 0;
     background-color: var(--dark-bg);
-    overflow: hidden;
     color: white;
     font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
     user-select: none;
-    -webkit-touch-callout: none;
 }
 
-canvas { display: block; }
+/* Menyer */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(2, 2, 5, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    text-align: center;
+}
+
+.hidden { display: none !important; }
+
+/* Animasjon for Welcome */
+.welcome-text {
+    font-size: 80px;
+    letter-spacing: 15px;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 30px var(--neon-cyan);
+    animation: glowPulse 2s infinite alternate, slideIn 1s ease-out;
+}
+
+@keyframes glowPulse {
+    from { text-shadow: 0 0 20px var(--neon-cyan); opacity: 0.8; }
+    to { text-shadow: 0 0 50px var(--neon-cyan); opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Knapper */
+button {
+    background: transparent;
+    border: 2px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 2px;
+}
+
+button:hover {
+    background: var(--neon-cyan);
+    color: black;
+    box-shadow: 0 0 20px var(--neon-cyan);
+}
+
+.retry-btn { border-color: var(--neon-magenta); color: var(--neon-magenta); }
+.retry-btn:hover { background: var(--neon-magenta); color: white; box-shadow: 0 0 20px var(--neon-magenta); }
 
 #ui {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    pointer-events: none;
+    top: 20px; left: 20px;
     z-index: 100;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    pointer-events: none;
 }
 
 .stat-box {
-    background: rgba(0, 0, 0, 0.85);
-    padding: 10px 18px;
-    border-radius: 4px;
-    border: 1px solid rgba(0, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-}
-
-.score-box { border-left: 4px solid var(--neon-cyan); }
-.wave-box { border-left: 4px solid var(--neon-orange); }
-
-.label { color: #aaaaaa; font-size: 13px; letter-spacing: 1.5px; }
-.value { font-size: 22px; font-weight: bold; margin-left: 8px; font-variant-numeric: tabular-nums; }
-
-.score-box .value { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
-.wave-box .value { color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); }
-
-/* Ultimate Cooldown Stil */
-#ultimate-status {
-    background: rgba(0, 0, 0, 0.85);
-    padding: 8px 18px;
-    border-radius: 4px;
-    font-size: 13px;
-    letter-spacing: 1px;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-left: 3px solid var(--neon-cyan);
+    margin-bottom: 5px;
     font-weight: bold;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-}
-
-.ultimate-ready {
-    color: #ffffff;
-    border-left-color: #ffffff !important;
-    text-shadow: 0 0 15px #ffffff;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-}
-
-.ultimate-charging {
-    color: #555555;
-    border-left-color: #333333 !important;
-}
-
-.help-text {
-    margin: 10px 0 0 0;
-    font-size: 11px;
-    color: #777777;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    max-width: 400px;
 }
