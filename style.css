@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #010101; /* Dypeste svart */
+    overflow: hidden;
+    color: #00ffcc; /* Sci-fi cyan */
+    font-family: 'Courier New', Courier, monospace;
+}
+
+canvas {
+    display: block;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #00ffcc;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+    z-index: 10; /* Sikrer at UI ligger på topp */
+}
+
+h2 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: bold;
+}
+
+p {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+}
